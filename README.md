@@ -50,9 +50,10 @@ Engram/
 │   ├── skills/                     # 业务线规则（可热加载）
 │   ├── docker-compose.yml          # Redis / ChromaDB / Prometheus / Nginx / App
 │   └── README.md                   # 完整部署与使用指南
-└── frontend/                       # Vue 3 + Vite 调试控制台
-    ├── src/                        # 对话调试、健康检查、监控摘要、知识库管理
-    ├── Dockerfile                  # 多阶段构建，容器内编译
+└── frontend/                       # Vue 3 + Vite 前端
+    ├── src/views/ChatView.vue       # 在线客服：面向终端用户的对话界面
+    ├── src/views/ConsoleView.vue    # 控制台：链路追踪、监控、知识库管理
+    ├── Dockerfile                   # 多阶段构建，容器内编译
     └── README.md
 ```
 
@@ -67,7 +68,7 @@ docker compose up -d --build
 
 | 服务 | 地址 |
 |------|------|
-| 前端控制台 | http://localhost:5174 |
+| 前端 | http://localhost:5173 |
 | API | http://localhost:8000 |
 | Swagger | http://localhost:8000/docs |
 | Nginx | http://localhost |
@@ -91,6 +92,9 @@ npm run dev                 # http://localhost:5173
 ```
 
 开发模式下 Vite 会把 `/api/python` 代理到 `http://localhost:8000`。
+
+前端只有 `http://localhost:5173` 一个入口，开发模式与 Docker 模式共用该端口、二选一。
+同时启动会因端口冲突直接报错，避免出现两个地址不知道在看哪一个。
 
 ## 详细文档
 

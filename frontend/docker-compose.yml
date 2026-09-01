@@ -7,8 +7,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: engram-frontend
+    # 与 npm run dev 用同一个端口：前端只有 http://localhost:5173 一个入口。
+    # 两种模式二选一，同时启动会直接因端口冲突报错。
     ports:
-      - "5174:80"
+      - "5173:80"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
