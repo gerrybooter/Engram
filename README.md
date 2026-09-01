@@ -36,6 +36,7 @@ Engram 是一个企业级智能客服 Agent 平台。它不是"用户问一句�
 
 ```text
 Engram/
+├── docker-compose.yml              # 根级编排：聚合前后端，一条命令起全栈
 ├── backend/                        # Python 后端
 │   ├── api/main.py                 # FastAPI 入口：/chat /search /knowledge /monitor /eval
 │   ├── core/intent_recognizer.py   # 三路融合意图识别
@@ -51,31 +52,37 @@ Engram/
 │   └── README.md                   # 完整部署与使用指南
 └── frontend/                       # Vue 3 + Vite 调试控制台
     ├── src/                        # 对话调试、健康检查、监控摘要、知识库管理
+    ├── Dockerfile                  # 多阶段构建，容器内编译
     └── README.md
 ```
 
 ## 快速开始
 
-### 后端
+### 一条命令拉起全部服务
 
 ```bash
-cd backend
-cp .env.example .env        # 填入 ANTHROPIC_API_KEY
+cp backend/.env.example backend/.env    # 填入 ANTHROPIC_API_KEY
 docker compose up -d --build
 ```
 
-启动后：
-
 | 服务 | 地址 |
 |------|------|
+| 前端控制台 | http://localhost:5174 |
 | API | http://localhost:8000 |
 | Swagger | http://localhost:8000/docs |
 | Nginx | http://localhost |
 | Prometheus | http://localhost:9090 |
 
-支持 Anthropic 兼容的第三方接口，在 `.env` 中配置 `ANTHROPIC_BASE_URL` 即可。
+支持 Anthropic 兼容的第三方接口，在 `backend/.env` 中配置 `ANTHROPIC_BASE_URL` 即可。
 
-### 前端
+### 只起后端
+
+```bash
+cd backend
+docker compose up -d --build
+```
+
+### 前端开发模式（热更新）
 
 ```bash
 cd frontend

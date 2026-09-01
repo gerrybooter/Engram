@@ -47,13 +47,7 @@ VITE_PYTHON_API_URL=http://localhost:8000 npm run dev
 
 ## Docker 部署
 
-先构建前端静态文件：
-
-```bash
-npm run build
-```
-
-再构建并启动容器：
+构建并启动容器（前端会在容器内编译，宿主机不需要先 `npm run build`）：
 
 ```bash
 docker compose up -d --build

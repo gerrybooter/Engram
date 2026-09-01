@@ -1,0 +1,15 @@
+# Engram — 根级编排
+#
+# 一条命令拉起全部服务：
+#   docker compose up -d --build
+#
+# 实际配置分别定义在 backend/ 和 frontend/ 下，这里只做聚合。
+# 各子文件里的相对路径会相对它自己所在目录解析，因此可以单独使用：
+#   cd backend  && docker compose up -d     # 只起后端全栈
+#   cd frontend && docker compose up -d     # 只起前端控制台
+#
+# 前置条件：backend/.env 必须存在（从 backend/.env.example 复制并填入 API Key）。
+
+include:
+  - path: ./backend/docker-compose.yml
+  - path: ./frontend/docker-compose.yml
