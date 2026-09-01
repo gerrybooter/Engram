@@ -1,0 +1,271 @@
+{
+  "timestamp": "2026-08-23T12:12:48.745131",
+  "total": 8,
+  "passed": 6,
+  "pass_rate": 0.75,
+  "avg_scores": {
+    "relevance": 0.7786,
+    "accuracy": 0.7714,
+    "completeness": 0.6357,
+    "helpfulness": 0.7143,
+    "intent_accuracy": 0.9091
+  },
+  "regressions": [
+    "relevance: 1.000 → 0.779 (退化 22.1%)",
+    "accuracy: 0.967 → 0.771 (退化 20.2%)",
+    "completeness: 0.700 → 0.636 (退化 9.2%)",
+    "helpfulness: 0.850 → 0.714 (退化 16.0%)"
+  ],
+  "recommendations": [
+    "完整性偏低：Agent 可能过早结束回答，考虑在 prompt 中要求提供完整解决方案",
+    "有用性偏低：回答可能过于抽象，考虑要求 Agent 提供具体操作步骤"
+  ],
+  "results": [
+    {
+      "test_id": "intent_recognition",
+      "passed": true,
+      "scores": {
+        "accuracy": 0.9091,
+        "macro_f1": 0.8333
+      },
+      "detail": "准确率 90.9%，Macro-F1 0.833",
+      "metadata": {
+        "total": 11,
+        "correct": 10,
+        "cases": [
+          {
+            "message": "我的订单什么时候到？",
+            "expected": "logistics",
+            "predicted": "logistics",
+            "confidence": 0.8075,
+            "reasoning": "用户询问订单送达时间，属于物流查询。"
+          },
+          {
+            "message": "帮我取消订单",
+            "expected": "request",
+            "predicted": "request",
+            "confidence": 0.9249999999999999,
+            "reasoning": "用户明确请求取消订单，属于请求类意图。"
+          },
+          {
+            "message": "你们服务太差了！",
+            "expected": "complaint",
+            "predicted": "complaint",
+            "confidence": 0.8825,
+            "reasoning": "用户明确表达了对服务的不满，属于投诉抱怨。"
+          },
+          {
+            "message": "应用一直报500错误",
+            "expected": "technical_crash",
+            "predicted": "technical_crash",
+            "confidence": 0.8825,
+            "reasoning": "用户报告应用持续报500错误，属于应用技术故障。"
+          },
+          {
+            "message": "为什么扣了两次款？",
+            "expected": "payment_issue",
+            "predicted": "payment_issue",
+            "confidence": 0.8075,
+            "reasoning": "用户询问重复扣款问题，匹配支付异常意图。"
+          },
+          {
+            "message": "我要投诉，转人工！",
+            "expected": "human_handoff",
+            "predicted": "escalation",
+            "confidence": 0.8075,
+            "reasoning": "用户明确表达投诉并要求转人工，属于升级处理意图。"
+          },
+          {
+            "message": "你好",
+            "expected": "greeting",
+            "predicted": "greeting",
+            "confidence": 0.9249999999999999,
+            "reasoning": "用户打招呼"
+          },
+          {
+            "message": "修改我的邮箱地址",
+            "expected": "account",
+            "predicted": "account",
+            "confidence": 0.9249999999999999,
+            "reasoning": "用户请求修改邮箱地址，属于账户信息管理。"
+          },
+          {
+            "message": "帮我开发票",
+            "expected": "invoice",
+            "predicted": "invoice",
+            "confidence": 0.9165,
+            "reasoning": "用户明确要求开发票，匹配细粒度意图invoice。"
+          },
+          {
+            "message": "退款多久到账？",
+            "expected": "refund",
+            "predicted": "refund",
+            "confidence": 0.8825,
+            "reasoning": "用户询问退款到账时间，属于退款相关咨询。"
+          },
+          {
+            "message": "登录一直报401",
+            "expected": "technical_login",
+            "predicted": "technical_login",
+            "confidence": 0.9249999999999999,
+            "reasoning": "用户描述登录时遇到401错误，符合登录故障的细粒度意图。"
+          }
+        ]
+      }
+    },
+    {
+      "test_id": "dialog_0",
+      "passed": true,
+      "scores": {
+        "relevance": 1.0,
+        "accuracy": 1.0,
+        "completeness": 0.8,
+        "helpfulness": 0.9,
+        "overall": 0.925
+      },
+      "detail": "Q: 我的订单 #12345 还没到，已经超时了... → 综合评分 0.925",
+      "metadata": {
+        "question": "我的订单 #12345 还没到，已经超时了",
+        "response": "您好，非常理解您的焦急心情。订单 #12345 超时未送达，我先帮您确认一下物流状态。\n\n为了尽快核实，请您补充以下信息：\n1. 下单时使用的**手机号后四位**，以便我进行身份和订单核验。\n2. 如果能提供**物流单号**或**卖家名称**，查询会更准确。\n\n在确认信息后，我会帮您查看物流最新节点；如果确实存在派送异常，我会为您记录并安排专员跟进处理。请您补充信息，我马上为您处理。",
+        "agent_type": "general",
+        "intent": "logistics",
+        "turn": 0,
+        "conv_id": "eval_0",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    },
+    {
+      "test_id": "dialog_1",
+      "passed": false,
+      "scores": {
+        "relevance": 0.0,
+        "accuracy": 0.0,
+        "completeness": 0.0,
+        "helpfulness": 0.0,
+        "overall": 0.0
+      },
+      "detail": "Q: 应用登录一直报错 401... → 综合评分 0.000",
+      "metadata": {
+        "question": "应用登录一直报错 401",
+        "response": "",
+        "agent_type": "technical",
+        "intent": "technical_login",
+        "turn": 0,
+        "conv_id": "eval_1",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    },
+    {
+      "test_id": "dialog_2",
+      "passed": true,
+      "scores": {
+        "relevance": 1.0,
+        "accuracy": 0.95,
+        "completeness": 0.9,
+        "helpfulness": 1.0,
+        "overall": 0.9625
+      },
+      "detail": "Q: 为什么这个月多扣了 50 块钱？... → 综合评分 0.963",
+      "metadata": {
+        "question": "为什么这个月多扣了 50 块钱？",
+        "response": "您好，我理解您对本月账单多扣 50 元有疑问。要准确核查这笔扣款，通常需要结合您的具体账单明细，比如是通过支付宝、微信还是银行卡扣款，扣款方显示的名称是什么。\n\n**建议您先按以下步骤核对：**\n1. **查看账单明细**：在您绑定的支付平台（如微信/支付宝）中找到这笔 50 元的扣款记录，点击查看“账单详情”。\n2. **核对扣款项目**：确认是否为某个会员自动续费（例如影视会员、音乐会员、网盘或应用订阅），或是否为上月账单的补扣/滞纳金。\n3. **核对关联账户**：如果是信用卡或花呗，请检查是否有上期未还清的利息或分期手续费。\n\n**如果这笔扣款确实有误：**\n请您提供一下该笔扣款的**商户名称**和**扣款时间**，我需要协助您调取交易流水号，并提交至对应平台进行申诉。在这里需要向您说明：**任何退款操作都必须由后台人工审核，我这边无法直接操作退款**，但我会在您提供信息后，立即为您生成核查工单，并告知您后续需要联系的具体客服渠道。\n\n为了加快处理速度，辛苦您补充以下任一信息：\n- 扣款记录的**商户全称**（例如 xxx 网络科技公司）\n- 或者您的**手机号后四位**用于核对身份\n\n我会立刻为您进行下一步排查。",
+        "agent_type": "billing",
+        "intent": "payment_issue",
+        "turn": 0,
+        "conv_id": "eval_2",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    },
+    {
+      "test_id": "dialog_3",
+      "passed": true,
+      "scores": {
+        "relevance": 1.0,
+        "accuracy": 1.0,
+        "completeness": 0.7,
+        "helpfulness": 0.85,
+        "overall": 0.8875
+      },
+      "detail": "Q: 帮我把收货地址改成北京市朝阳区... → 综合评分 0.887",
+      "metadata": {
+        "question": "帮我把收货地址改成北京市朝阳区",
+        "response": "很抱歉，我无法直接帮您修改收货地址。作为账单服务助手，我主要负责账单查询、退款、发票和订阅管理等相关问题。地址变更属于账户设置或订单管理范畴，建议您：\n\n- 登录您购买商品的平台，在“账户设置”或“订单详情”中自行修改收货地址；\n- 或联系该平台的在线客服/售后客服，提供订单号并请求协助修改。\n\n如果您有其他账单或财务相关的问题，可以随时告诉我，我会尽力协助。😊",
+        "agent_type": "billing",
+        "intent": "account",
+        "turn": 0,
+        "conv_id": "eval_3",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    },
+    {
+      "test_id": "dialog_4_turn_0",
+      "passed": true,
+      "scores": {
+        "relevance": 1.0,
+        "accuracy": 1.0,
+        "completeness": 0.8,
+        "helpfulness": 0.9,
+        "overall": 0.925
+      },
+      "detail": "Q: 你好，我想退款... → 综合评分 0.925",
+      "metadata": {
+        "question": "你好，我想退款",
+        "response": "您好，我是账单服务专家，非常理解您希望尽快处理退款。退款需要先进行订单核验，我可以协助您梳理流程。\n\n为了准确处理您的退款申请，我需要先向您核对以下关键信息：\n\n1. **订单号**或交易号（这是查询订单状态的必备信息）。\n2. 这笔订单的**支付时间**和**支付渠道**（例如微信、支付宝、银行卡）。\n3. **扣款金额**和币种。\n4. 您申请的退款原因（例如：重复扣款、不再需要、服务未生效等）。\n\n关于退款，先向您说明：退款是否可行、具体金额，需要以**订单实际支付金额**和**平台退款规则**为准，并经过核验和人工审核后确认。**我无法在此处直接操作或承诺退款到账**，但会协助您明确申请路径和后续步骤。\n\n请您先提供上述订单信息或其支付凭证截图摘要（请不要发送支付密码、短信验证码或完整银行卡号）。收到信息后，我会为您进一步判断并指引下一步操作。",
+        "agent_type": "billing",
+        "intent": "refund",
+        "turn": 0,
+        "conv_id": "eval_4",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    },
+    {
+      "test_id": "dialog_4_turn_1",
+      "passed": false,
+      "scores": {
+        "relevance": 0.5,
+        "accuracy": 0.5,
+        "completeness": 0.5,
+        "helpfulness": 0.5,
+        "overall": 0.5
+      },
+      "detail": "Q: 订单号是 #12345... → 综合评分 0.500",
+      "metadata": {
+        "question": "订单号是 #12345",
+        "response": "我还不能确定您要处理的是哪类问题。请补充一下是订单物流、退款账单、账户资料，还是技术故障？",
+        "agent_type": "general",
+        "intent": "other",
+        "turn": 1,
+        "conv_id": "eval_4",
+        "judge_failed": true,
+        "judge_error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    },
+    {
+      "test_id": "dialog_4_turn_2",
+      "passed": true,
+      "scores": {
+        "relevance": 0.95,
+        "accuracy": 0.95,
+        "completeness": 0.75,
+        "helpfulness": 0.85,
+        "overall": 0.875
+      },
+      "detail": "Q: 退款多久能到账？... → 综合评分 0.875",
+      "metadata": {
+        "question": "退款多久能到账？",
+        "response": "您好，关于“退款多久能到账”，需要先确认这笔订单的退款申请状态和支付方式，我无法直接看到系统内信息，所以暂时不能给您一个确定的时间。\n\n**当前说明：**\n- 退款是否已提交申请、是否已通过审核，直接影响到账时间。\n- 如果退款已审核通过，通常会**原路退回**到您的支付账户，但不同渠道处理时间不同，例如微信/支付宝通常较快，银行卡可能还需银行处理，整体预计在 **1–7 个工作日** 范围内，具体以支付渠道实际到账为准。\n- 如果退款还在审核中，则尚未进入退款环节，需要先等待审核结果。\n\n**需要您补充核验：**\n1. 这笔订单 #12345 的**支付渠道**（微信、支付宝、银行卡等）？\n2. 这笔订单的**支付时间**和**实付金额**？\n3. 您是否已经提交退款申请？是否收到过审核结果或退款流水号？\n\n**下一步处理：**\n您可以先提供以上信息，我会帮您核对订单状态并进一步说明退款进度。请放心，我不会索要您的支付密码、短信验证码或完整银行卡号；如有退款流水号，也请不要在对话中发送完整数字，提供关键摘要即可。",
+        "agent_type": "billing",
+        "intent": "refund",
+        "turn": 2,
+        "conv_id": "eval_4",
+        "judge_failed": false,
+        "judge_error": null
+      }
+    }
+  ]
+}
