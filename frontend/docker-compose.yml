@@ -1,3 +1,6 @@
+# 固定项目名，保证从仓库根目录或本目录启动都用同一套容器和数据卷
+name: engram
+
 services:
   engram-frontend:
     build:

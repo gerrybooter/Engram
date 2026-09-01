@@ -10,6 +10,8 @@
 #
 # 前置条件：backend/.env 必须存在（从 backend/.env.example 复制并填入 API Key）。
 
+name: engram
+
 include:
   - path: ./backend/docker-compose.yml
   - path: ./frontend/docker-compose.yml
