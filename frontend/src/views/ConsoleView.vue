@@ -65,6 +65,10 @@
                 <b>{{ toPercent(score.value) }}</b>
               </div>
             </div>
+            <p v-if="reply.embeddingProvider" class="trace-sub">
+              向量来源：{{ embeddingProviderLabel(reply.embeddingProvider) }}
+              <span v-if="isEmbeddingDegraded(reply.embeddingProvider)" class="tag warn-tag">已降级</span>
+            </p>
           </div>
 
           <div class="trace-step">
@@ -162,9 +166,11 @@ import {
 } from '../lib/backends'
 import {
   agentLabel,
+  embeddingProviderLabel,
   formatLatency,
   intentLabel,
   intentSourceLabel,
+  isEmbeddingDegraded,
   nonEmptyEntities,
   toPercent
 } from '../lib/labels'

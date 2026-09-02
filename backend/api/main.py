@@ -226,6 +226,8 @@ class ChatResponse(BaseModel):
     entities: Dict[str, List[str]] = Field(default_factory=dict)
     intent_confidence: float = 0.0
     intent_source_scores: Dict[str, float] = Field(default_factory=dict)
+    # 实际生效的 Embedding 来源：minilm / remote / ngram / disabled
+    embedding_provider: str = ""
 
 
 # ── 路由 ──────────────────────────────────────────────────────────────────────
@@ -325,6 +327,7 @@ async def chat(req: ChatRequest):
         entities=intent_result.entities,
         intent_confidence=round(intent_result.confidence, 4),
         intent_source_scores=intent_result.source_scores,
+        embedding_provider=getattr(intent_result, "embedding_provider", ""),
     )
 
 

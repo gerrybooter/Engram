@@ -87,6 +87,7 @@ function normalizeChatResponse(raw) {
     intentGroup: raw.intent_group || 'other',
     intentConfidence: Number(raw.intent_confidence ?? 0),
     intentSourceScores: raw.intent_source_scores || {},
+    embeddingProvider: raw.embedding_provider || '',
     entities: raw.entities || {},
     agentType: raw.agent_type || '',
     agentTypes: raw.agent_types || [],

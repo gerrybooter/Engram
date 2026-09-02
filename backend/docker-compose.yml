@@ -92,6 +92,10 @@ services:
       - ./data/eval:/app/data/eval
       - ./skills:/app/skills
       - ./logs:/app/logs
+      # 意图 Embedding 用的 all-MiniLM-L6-v2（ChromaDB 内置模型）缓存。
+      # 容器以 engram 用户运行，模型落在 ~/.cache/chroma。不挂卷的话
+      # 每次重建镜像都会重新下载约 80MB。
+      - onnx-models:/home/engram/.cache/chroma
     depends_on:
       redis:
         condition: service_healthy
@@ -143,3 +147,4 @@ volumes:
   chromadb-data:
   prometheus-data:
   nginx-logs:
+  onnx-models:

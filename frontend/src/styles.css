@@ -653,11 +653,24 @@ code {
 
 .score {
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) 38px;
+  /* 首列要容得下最长的标签「规则细化修正」（6 字 @12px ≈ 72px），62px 会溢出。 */
+  grid-template-columns: 80px minmax(0, 1fr) 38px;
   align-items: center;
   gap: 8px;
   font-size: 12px;
   color: var(--text-soft);
+}
+
+.score > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.warn-tag {
+  margin-left: 6px;
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .score .bar {

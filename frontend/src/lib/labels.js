@@ -40,11 +40,23 @@ const ENTITY_LABELS = {
 }
 
 // 键名来自后端 IntentRecognizer 的 source_scores，实测为 pattern / embedding / llm。
+// refined_by_pattern 是投票后的细粒度修正标记（generic 意图被 specific 关键词纠正时写入），
+// 不是一路独立信号——没映射的话面板里会直接露出原始英文键名。
 const INTENT_SOURCE_LABELS = {
   pattern: '规则匹配',
   rule: '规则匹配',
   embedding: '向量相似',
-  llm: '大模型判定'
+  llm: '大模型判定',
+  refined_by_pattern: '规则细化修正'
+}
+
+// 后端如实上报本轮 Embedding 实际走的是哪一级，用于发现静默降级。
+const EMBEDDING_PROVIDER_LABELS = {
+  minilm: 'all-MiniLM-L6-v2（本地，与 RAG 同模型）',
+  remote: '远端 Embedding API',
+  ngram: '字符 n-gram 兜底（已降级，非语义）',
+  disabled: '未启用',
+  unknown: '未知'
 }
 
 export function agentLabel(value) {
@@ -61,6 +73,15 @@ export function entityLabel(key) {
 
 export function intentSourceLabel(key) {
   return INTENT_SOURCE_LABELS[key] || key
+}
+
+export function embeddingProviderLabel(key) {
+  return EMBEDDING_PROVIDER_LABELS[key] || key || '未知'
+}
+
+/** 走到字符 n-gram 说明语义那一路降级了，界面要能看出来。 */
+export function isEmbeddingDegraded(key) {
+  return key === 'ngram' || key === 'disabled'
 }
 
 /** 把毫秒渲染成用户看得懂的耗时，例如 820ms / 1.4s。 */

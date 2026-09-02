@@ -6,6 +6,11 @@
   2. Embedding 向量相似度（权重 20%）—— 快速匹配常见表达
   3. 关键词模式匹配（权重 10%）—— 零延迟兜底
 
+Embedding 一路复用 ChromaDB 内置的 all-MiniLM-L6-v2（与 RAG 检索同一个模型，
+本地 ONNX 推理，不额外引入依赖，也不需要远端 Embedding 服务）。取不到该模型时
+按 远端 API → 本地模型 → 字符 n-gram 的顺序逐级降级，并在 IntentResult 上如实
+标记实际生效的来源，避免某一路静默失效却无人察觉。
+
 三路结果通过加权投票合并，置信度低于阈值时降级为 OTHER。
 LLM 和 Embedding 并行调用，不串行等待。
 """
@@ -65,6 +70,17 @@ class IntentResult:
     reasoning:  str
     latency_ms: float
     source_scores: Dict[str, float] = field(default_factory=dict)
+    # 实际生效的 Embedding 来源：minilm / remote / ngram / disabled。
+    # 暴露出来是为了让降级可观测——否则某一路静默失效很难发现。
+    embedding_provider: str = "unknown"
+
+
+# Embedding 来源标识
+EMBEDDING_MINILM = "minilm"   # ChromaDB 内置 all-MiniLM-L6-v2（本地 ONNX，与 RAG 同模型）
+EMBEDDING_REMOTE = "remote"   # 客户端提供的远端 embeddings 接口
+EMBEDDING_NGRAM  = "ngram"    # 字符 n-gram 哈希向量（最后兜底，非语义）
+
+_UNSET = object()
 
 
 # ── Few-shot 模板（同时用于 LLM 示例和 Embedding 匹配）────────────────────────
@@ -158,10 +174,15 @@ class IntentRecognizer:
         self.client    = AsyncAnthropic(**kwargs)
         self.model     = model
         self.threshold = confidence_threshold
-        # 第三方兼容 API（如 DeepSeek）通常不支持 Embedding，禁用该策略。
-        # 官方 Anthropic SDK 当前没有 embeddings 资源，因此下面会使用稳定的
-        # 本地字符 n-gram 向量作为轻量兜底，保证三路融合链路真实可跑。
-        self._embedding_enabled = not bool(base_url)
+        # Embedding 一路始终参与投票：_embed_texts 内部有 远端 → 本地 MiniLM →
+        # 字符 n-gram 三级降级，任何环境下都能拿到向量。
+        #
+        # 这里曾经写成 `not bool(base_url)`，导致只要配了第三方兼容网关
+        # （如 DeepSeek）整条 Embedding 路就被跳过、恒为 0 分，与
+        # "三路融合" 的设计意图相矛盾。
+        self._embedding_enabled = True
+        self._embedding_fn = _UNSET
+        self._embedding_provider = "unknown"
 
         self._tpl_embeddings: Dict[IntentCategory, List[List[float]]] = {}
         self._cache: Dict[str, IntentResult] = {}
@@ -212,6 +233,7 @@ class IntentRecognizer:
             reasoning=llm.get("reasoning", ""),
             latency_ms=(time.monotonic() - t0) * 1000,
             source_scores=source_scores,
+            embedding_provider=self._embedding_provider if self._embedding_enabled else "disabled",
         )
 
         # LRU 缓存
@@ -395,7 +417,8 @@ class IntentRecognizer:
             return
 
         all_texts = [t for cat in missing for t in _TEMPLATES[cat]]
-        vecs = [await self._embed_text(text) for text in all_texts]
+        # 一次批量推理，避免 50+ 条模板逐条调模型。
+        vecs = await self._embed_texts(all_texts)
         idx = 0
         for cat in missing:
             n = len(_TEMPLATES[cat])
@@ -403,22 +426,58 @@ class IntentRecognizer:
             idx += n
 
     async def _embed_text(self, text: str) -> List[float]:
-        """
-        生成文本向量。
+        return (await self._embed_texts([text]))[0]
 
-        如果未来接入的官方/兼容客户端提供 embeddings.create，会优先使用远端向量；
-        当前 Anthropic SDK 没有该资源时，退化为字符 n-gram 哈希向量。这样不会因为
-        Embedding 服务缺失导致三路融合中断。
+    async def _embed_texts(self, texts: List[str]) -> List[List[float]]:
+        """
+        批量生成文本向量，按以下顺序逐级降级：
+
+          1. 客户端自带的远端 embeddings 接口（官方 SDK 目前没有该资源）
+          2. ChromaDB 内置 all-MiniLM-L6-v2 —— 与 RAG 检索同一个模型，
+             本地 ONNX 推理，chromadb 已是后端依赖，不引入新包
+          3. 字符 n-gram 哈希向量 —— 纯词面兜底，保证链路不中断
+
+        实际生效的来源记录在 self._embedding_provider 上，随响应返回，
+        便于发现"某一路悄悄降级了"。
         """
         embeddings = getattr(self.client, "embeddings", None)
         if embeddings is not None:
             try:
-                resp = await embeddings.create(model="voyage-3-lite", input=[text])
-                return list(resp.data[0].embedding)
+                resp = await embeddings.create(model="voyage-3-lite", input=list(texts))
+                self._embedding_provider = EMBEDDING_REMOTE
+                return [list(item.embedding) for item in resp.data]
             except Exception as ex:
-                logger.warning(f"远端 Embedding 失败，使用本地向量兜底: {ex}")
+                logger.warning(f"远端 Embedding 失败，改用本地模型: {ex}")
 
-        return self._local_embedding(text)
+        fn = self._load_embedding_fn()
+        if fn is not None:
+            try:
+                # ONNX 推理是同步 CPU 计算，放到线程里避免阻塞事件循环。
+                vectors = await asyncio.to_thread(fn, list(texts))
+                self._embedding_provider = EMBEDDING_MINILM
+                return [list(v) for v in vectors]
+            except Exception as ex:
+                logger.warning(f"本地 MiniLM 推理失败，退回字符 n-gram: {ex}")
+
+        self._embedding_provider = EMBEDDING_NGRAM
+        return [self._local_embedding(t) for t in texts]
+
+    def _load_embedding_fn(self):
+        """
+        懒加载 ChromaDB 默认 Embedding 函数（all-MiniLM-L6-v2）。
+
+        只在首次使用时导入并实例化；失败后缓存 None，不再重复尝试。
+        """
+        if self._embedding_fn is _UNSET:
+            try:
+                from chromadb.utils import embedding_functions
+
+                self._embedding_fn = embedding_functions.DefaultEmbeddingFunction()
+                logger.info("意图 Embedding 使用 ChromaDB 内置 all-MiniLM-L6-v2")
+            except Exception as ex:
+                logger.warning(f"无法加载本地 Embedding 模型: {ex}")
+                self._embedding_fn = None
+        return self._embedding_fn
 
     @staticmethod
     def _local_embedding(text: str, dims: int = 256) -> List[float]:
